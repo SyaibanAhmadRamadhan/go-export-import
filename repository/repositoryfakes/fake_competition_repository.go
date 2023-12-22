@@ -5,8 +5,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/SyaibanAhmadRamadhan/go-export-import-big-data/model"
-	"github.com/SyaibanAhmadRamadhan/go-export-import-big-data/repository"
+	"github.com/SyaibanAhmadRamadhan/go-export-import/model"
+	"github.com/SyaibanAhmadRamadhan/go-export-import/repository"
 )
 
 type FakeCompetitionRepository struct {
@@ -21,6 +21,20 @@ type FakeCompetitionRepository struct {
 	}
 	insertManyReturnsOnCall map[int]struct {
 		result1 error
+	}
+	LeaderBoardStub        func(context.Context, string) ([]repository.LeaderBoardResult, error)
+	leaderBoardMutex       sync.RWMutex
+	leaderBoardArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+	}
+	leaderBoardReturns struct {
+		result1 []repository.LeaderBoardResult
+		result2 error
+	}
+	leaderBoardReturnsOnCall map[int]struct {
+		result1 []repository.LeaderBoardResult
+		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
@@ -93,11 +107,78 @@ func (fake *FakeCompetitionRepository) InsertManyReturnsOnCall(i int, result1 er
 	}{result1}
 }
 
+func (fake *FakeCompetitionRepository) LeaderBoard(arg1 context.Context, arg2 string) ([]repository.LeaderBoardResult, error) {
+	fake.leaderBoardMutex.Lock()
+	ret, specificReturn := fake.leaderBoardReturnsOnCall[len(fake.leaderBoardArgsForCall)]
+	fake.leaderBoardArgsForCall = append(fake.leaderBoardArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+	}{arg1, arg2})
+	stub := fake.LeaderBoardStub
+	fakeReturns := fake.leaderBoardReturns
+	fake.recordInvocation("LeaderBoard", []interface{}{arg1, arg2})
+	fake.leaderBoardMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeCompetitionRepository) LeaderBoardCallCount() int {
+	fake.leaderBoardMutex.RLock()
+	defer fake.leaderBoardMutex.RUnlock()
+	return len(fake.leaderBoardArgsForCall)
+}
+
+func (fake *FakeCompetitionRepository) LeaderBoardCalls(stub func(context.Context, string) ([]repository.LeaderBoardResult, error)) {
+	fake.leaderBoardMutex.Lock()
+	defer fake.leaderBoardMutex.Unlock()
+	fake.LeaderBoardStub = stub
+}
+
+func (fake *FakeCompetitionRepository) LeaderBoardArgsForCall(i int) (context.Context, string) {
+	fake.leaderBoardMutex.RLock()
+	defer fake.leaderBoardMutex.RUnlock()
+	argsForCall := fake.leaderBoardArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeCompetitionRepository) LeaderBoardReturns(result1 []repository.LeaderBoardResult, result2 error) {
+	fake.leaderBoardMutex.Lock()
+	defer fake.leaderBoardMutex.Unlock()
+	fake.LeaderBoardStub = nil
+	fake.leaderBoardReturns = struct {
+		result1 []repository.LeaderBoardResult
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeCompetitionRepository) LeaderBoardReturnsOnCall(i int, result1 []repository.LeaderBoardResult, result2 error) {
+	fake.leaderBoardMutex.Lock()
+	defer fake.leaderBoardMutex.Unlock()
+	fake.LeaderBoardStub = nil
+	if fake.leaderBoardReturnsOnCall == nil {
+		fake.leaderBoardReturnsOnCall = make(map[int]struct {
+			result1 []repository.LeaderBoardResult
+			result2 error
+		})
+	}
+	fake.leaderBoardReturnsOnCall[i] = struct {
+		result1 []repository.LeaderBoardResult
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeCompetitionRepository) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.insertManyMutex.RLock()
 	defer fake.insertManyMutex.RUnlock()
+	fake.leaderBoardMutex.RLock()
+	defer fake.leaderBoardMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

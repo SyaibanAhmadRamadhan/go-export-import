@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
 
-	"github.com/SyaibanAhmadRamadhan/go-export-import-big-data/model"
+	"github.com/SyaibanAhmadRamadhan/go-export-import/model"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
@@ -21,6 +21,14 @@ type CompetitionRepository interface {
 	// InsertMany is a method of competitionRepositoryImpl that inserts multiple competition records.
 	// It uses the ON CONFLICT DO NOTHING clause to handle conflicts based on the 'id' column.
 	InsertMany(ctx context.Context, competitions []model.Competition) (err error)
+
+	// LeaderBoard retrieves and displays the leaderboard for a specific competition.
+	LeaderBoard(ctx context.Context, competitionID string) (res []LeaderBoardResult, err error)
+}
+
+type LeaderBoardResult struct {
+	TeamName                      string
+	Play, Win, Draw, Lose, Points int
 }
 
 // competitionRepositoryImpl is an inheritance of CompetitionRepository.
@@ -51,7 +59,7 @@ func (c *competitionRepositoryImpl) InsertMany(ctx context.Context, competitions
 		return
 	}
 
-	query, _, err := c.db.Builder.Insert(model.CompeititonTableName).
+	query, _, err := c.db.Builder.Insert(model.CompetitionTableName).
 		Columns(competitions[0].FieldID(), competitions[0].FieldDate()).
 		Suffix("ON CONFLICT(id) DO NOTHING").
 		Values("", "").ToSql()
@@ -83,6 +91,61 @@ func (c *competitionRepositoryImpl) InsertMany(ctx context.Context, competitions
 
 			return fmt.Errorf("unable to insert row: %w", err)
 		}
+	}
+
+	return
+}
+
+// LeaderBoard is an implementation of the LeaderBoard method for competitionRepositoryImpl,
+// adhering to the contracts specified in the CompetitionRepository interface.
+// LeaderBoard retrieves and displays the leaderboard for a specific competition.
+func (c *competitionRepositoryImpl) LeaderBoard(ctx context.Context, competitionID string) (res []LeaderBoardResult, err error) {
+	query := `
+		SELECT team_name,
+			   COALESCE(SUM(play), 0) as play,
+			   COALESCE(SUM(win), 0) as win,
+			   COALESCE(SUM(draw), 0) as draw,
+			   COALESCE(SUM(lose), 0) as lose,
+			   COALESCE(SUM(points), 0) as points
+		FROM (
+			SELECT team_name,
+				   COUNT(*) as play,
+				   SUM(CASE WHEN team_score > opponent_score THEN 1 ELSE 0 END) as win,
+				   SUM(CASE WHEN team_score = opponent_score THEN 1 ELSE 0 END) as draw,
+				   SUM(CASE WHEN team_score < opponent_score THEN 1 ELSE 0 END) as lose,
+				   SUM(CASE WHEN team_score > opponent_score THEN 3 WHEN team_score = opponent_score THEN 1 ELSE 0 END) as points
+			FROM (
+				SELECT team1_name as team_name, team1_score as team_score, team2_score as opponent_score
+				FROM match
+				WHERE competition_id = $1
+				UNION ALL
+				SELECT team2_name as team_name, team2_score as team_score, team1_score as opponent_score
+				FROM match
+				WHERE competition_id = $1
+			) as matches
+			GROUP BY team_name, team_score
+		) as m
+		GROUP BY team_name;
+	`
+
+	rows, err := c.db.Commander.Query(ctx, query, competitionID)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+
+	res = make([]LeaderBoardResult, 0)
+	// Menampilkan hasil query
+	for rows.Next() {
+		var leaderBoardRes LeaderBoardResult
+
+		err = rows.Scan(&leaderBoardRes.TeamName, &leaderBoardRes.Play, &leaderBoardRes.Win, &leaderBoardRes.Draw,
+			&leaderBoardRes.Lose, &leaderBoardRes.Points)
+		if err != nil {
+			return
+		}
+
+		res = append(res, leaderBoardRes)
 	}
 
 	return

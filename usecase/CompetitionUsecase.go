@@ -9,6 +9,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/SyaibanAhmadRamadhan/gocatch/gdir"
@@ -16,8 +17,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
 
-	"github.com/SyaibanAhmadRamadhan/go-export-import-big-data/model"
-	"github.com/SyaibanAhmadRamadhan/go-export-import-big-data/repository"
+	"github.com/SyaibanAhmadRamadhan/go-export-import/model"
+	"github.com/SyaibanAhmadRamadhan/go-export-import/repository"
 )
 
 // data struct represents a combination of Competition and Match models.
@@ -151,6 +152,57 @@ func (u *CompetitionUsecaseImpl) Input(args []string, limit int) error {
 	})
 
 	return err
+}
+
+// LeaderBoard retrieves the leaderboard data for a specific competition and writes it to a CSV file.
+// It takes a context, competition ID, and a filename for the CSV file as input arguments.
+func (u *CompetitionUsecaseImpl) LeaderBoard(ctx context.Context, args []string) (err error) {
+	if len(args) < 2 {
+		return errors.New("invalid arguments")
+	}
+
+	competitionID := args[0]
+	filename := args[1]
+
+	dataCompetitions, err := u.compeRepo.LeaderBoard(ctx, competitionID)
+	if err != nil {
+		return
+	}
+
+	var dataCsvRows [][]string
+	dataCsvRows = append(dataCsvRows, []string{
+		"team", "play", "win", "draw", "lose", "points",
+	})
+	for _, competition := range dataCompetitions {
+		dataCsvRows = append(dataCsvRows, []string{
+			competition.TeamName,
+			strconv.Itoa(competition.Play),
+			strconv.Itoa(competition.Win),
+			strconv.Itoa(competition.Draw),
+			strconv.Itoa(competition.Lose),
+			strconv.Itoa(competition.Points),
+		})
+	}
+
+	dir, err := gdir.LocateGoModDirectory()
+	if err != nil {
+		return err
+	}
+
+	file, err := os.Create(dir + "/res/" + filename + ".csv")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	for _, row := range dataCsvRows {
+		_, err = file.WriteString(strings.Join(row, ",") + "\n")
+		if err != nil {
+			return
+		}
+	}
+
+	return
 }
 
 // doTheJob method processes the collected Data and inserts records into the database.

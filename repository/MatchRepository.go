@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
 
-	"github.com/SyaibanAhmadRamadhan/go-export-import-big-data/model"
+	"github.com/SyaibanAhmadRamadhan/go-export-import/model"
 )
 
 // MatchRepository is the interface for the match table datastore.

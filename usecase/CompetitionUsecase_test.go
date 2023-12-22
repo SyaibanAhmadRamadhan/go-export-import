@@ -2,16 +2,19 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
 
+	"github.com/SyaibanAhmadRamadhan/gocatch/gdir"
 	"github.com/SyaibanAhmadRamadhan/gocatch/ginfra/gdb"
 	"github.com/SyaibanAhmadRamadhan/gocatch/ginfra/gdb/gdbfakes"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/SyaibanAhmadRamadhan/go-export-import-big-data/repository/repositoryfakes"
+	"github.com/SyaibanAhmadRamadhan/go-export-import/repository"
+	"github.com/SyaibanAhmadRamadhan/go-export-import/repository/repositoryfakes"
 )
 
 func TestCompetitionUsecaseImpl_Input(t *testing.T) {
@@ -86,7 +89,7 @@ func TestCompetitionUsecaseImpl_Input(t *testing.T) {
 	for i, table := range testTables {
 		t.Run("test"+strconv.Itoa(i), func(t *testing.T) {
 			csvFileName := "test_input" + strconv.Itoa(i) + ".csv"
-			err := WriteToCSV(table.dataCsv, csvFileName)
+			err := writeToCSV(table.dataCsv, csvFileName)
 			assert.NoError(t, err, "Error writing CSV file")
 
 			txMock.DoTransactionStub = func(ctx context.Context, option *gdb.TxOption, f func(c context.Context) (commit bool, err error)) error {
@@ -121,7 +124,37 @@ func TestCompetitionUsecaseImpl_Input(t *testing.T) {
 	}
 }
 
-func WriteToCSV(dataCsv [][]string, fileName string) error {
+func TestLeaderBoard(t *testing.T) {
+	// Mock data and dependencies
+	compeRepoMock := &repositoryfakes.FakeCompetitionRepository{}
+	matchRepoMock := &repositoryfakes.FakeMatchRepository{}
+	txMock := &gdbfakes.FakeTx{}
+
+	compeUsecase := NewCompetitionUsecaseImpl(compeRepoMock, matchRepoMock, txMock)
+
+	err := compeUsecase.LeaderBoard(context.Background(), []string{})
+	assert.Error(t, err)
+	assert.EqualError(t, err, "invalid arguments")
+
+	compeRepoMock.LeaderBoardReturns(nil, errors.New("repository error"))
+	err = compeUsecase.LeaderBoard(context.Background(), []string{"3", "filenamecompetition"})
+	assert.Error(t, err)
+	assert.EqualError(t, err, "repository error")
+
+	compeRepoMock.LeaderBoardReturns([]repository.LeaderBoardResult{}, nil)
+	err = compeUsecase.LeaderBoard(context.Background(), []string{"3", "filenamecompetition"})
+	assert.NoError(t, err)
+
+	dir, err := gdir.FindDirPathOfFileFromGoMod("filenamecompetition.csv")
+	assert.NoError(t, err)
+	assert.NotEqual(t, "", dir)
+
+	dir, err = gdir.LocateGoModDirectory()
+	assert.NoError(t, err)
+	os.Remove(dir + "/res/filenamecompetition.csv")
+}
+
+func writeToCSV(dataCsv [][]string, fileName string) error {
 	file, err := os.Create(fileName)
 	if err != nil {
 		return err

@@ -5,8 +5,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/SyaibanAhmadRamadhan/go-export-import-big-data/model"
-	"github.com/SyaibanAhmadRamadhan/go-export-import-big-data/repository"
+	"github.com/SyaibanAhmadRamadhan/go-export-import/model"
+	"github.com/SyaibanAhmadRamadhan/go-export-import/repository"
 )
 
 type FakeMatchRepository struct {

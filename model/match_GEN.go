@@ -19,26 +19,6 @@ func NewMatchWithOutPtr() Match {
 	return Match{}
 }
 
-// FieldCompeititonID is a field or column in the table Match.
-func (m *Match) FieldCompeititonID() string {
-	return "competition_id"
-}
-
-// SetCompeititonID is a setter for the field or column CompeititonID in the table Match.
-func (m *Match) SetCompeititonID(param string) {
-	m.CompeititonID = param
-}
-
-// FieldTeam1Name is a field or column in the table Match.
-func (m *Match) FieldTeam1Name() string {
-	return "team1_name"
-}
-
-// SetTeam1Name is a setter for the field or column Team1Name in the table Match.
-func (m *Match) SetTeam1Name(param string) {
-	m.Team1Name = param
-}
-
 // FieldTeam1Score is a field or column in the table Match.
 func (m *Match) FieldTeam1Score() string {
 	return "team1_score"
@@ -79,15 +59,35 @@ func (m *Match) SetID(param int64) {
 	m.ID = param
 }
 
+// FieldCompeititonID is a field or column in the table Match.
+func (m *Match) FieldCompeititonID() string {
+	return "competition_id"
+}
+
+// SetCompeititonID is a setter for the field or column CompeititonID in the table Match.
+func (m *Match) SetCompeititonID(param string) {
+	m.CompeititonID = param
+}
+
+// FieldTeam1Name is a field or column in the table Match.
+func (m *Match) FieldTeam1Name() string {
+	return "team1_name"
+}
+
+// SetTeam1Name is a setter for the field or column Team1Name in the table Match.
+func (m *Match) SetTeam1Name(param string) {
+	m.Team1Name = param
+}
+
 // AllField is a function to get all field or column in the table Match.
 func (m *Match) AllField() (str []string) {
 	str = []string{ 
+		`competition_id`,
+		`team1_name`,
 		`team1_score`,
 		`team2_name`,
 		`team2_score`,
 		`id`,
-		`competition_id`,
-		`team1_name`,
 	}
 	return
 }
@@ -104,18 +104,18 @@ func (m *Match) GetValuesByColums(columns ...string) []any {
 	var values []any
 	for _, column := range columns {
 		switch column {
-		case m.FieldTeam1Score():
-			values = append(values, m.Team1Score)
-		case m.FieldTeam2Name():
-			values = append(values, m.Team2Name)
-		case m.FieldTeam2Score():
-			values = append(values, m.Team2Score)
 		case m.FieldID():
 			values = append(values, m.ID)
 		case m.FieldCompeititonID():
 			values = append(values, m.CompeititonID)
 		case m.FieldTeam1Name():
 			values = append(values, m.Team1Name)
+		case m.FieldTeam1Score():
+			values = append(values, m.Team1Score)
+		case m.FieldTeam2Name():
+			values = append(values, m.Team2Name)
+		case m.FieldTeam2Score():
+			values = append(values, m.Team2Score)
 		}
 	}
 	return values

@@ -26,7 +26,7 @@ func (p PostgresConf) ConnString() string {
 // if there is no variable in os.Env then there will be a default value
 func EnvPostgresConf() PostgresConf {
 	return PostgresConf{
-		User:     genv.GetEnv("POSTGRES_USER", "ROOT"),
+		User:     genv.GetEnv("POSTGRES_USER", "root"),
 		Password: genv.GetEnv("POSTGRES_PASSWORD", "root"),
 		Host:     genv.GetEnv("POSTGRES_HOST", "127.0.0.1"),
 		Port:     genv.GetEnv("POSTGRES_PORT", "5432"),

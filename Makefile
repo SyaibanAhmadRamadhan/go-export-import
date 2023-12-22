@@ -1,7 +1,7 @@
 .PHONY: clean
 
 all: dist
-	go build -o dist/program ./...
+	go build -o dist/program main.go
 
 dist: clean
 	mkdir dist

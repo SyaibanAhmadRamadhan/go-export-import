@@ -1,22 +1,23 @@
 package model
 
-// DO NOT EDIT, will be overwritten by https://github.com/SyaibanAhmadRamadhan/jolly/blob/main/Jdb/JOpg/postgres_generator.go.
+// DO NOT EDIT, will be overwritten by https://github.com/SyaibanAhmadRamadhan/jolly/blob/main/Jdb/JOpg/postgres_generator.go. 
 
 import (
 	"errors"
+
 	"time"
 )
 
-// CompeititonTableName this table or collection name
-const CompeititonTableName string = "competition"
+// CompetitionTableName this table or collection name
+const CompetitionTableName string = "competition"
 
-// NewCompeititon is a struct with pointer that represents the table Competition in the database.
-func NewCompeititon() *Competition {
+// NewCompetition is a struct with pointer that represents the table Competition in the database.
+func NewCompetition() *Competition {
 	return &Competition{}
 }
 
-// NewCompeititonWithOutPtr is a struct without pointer that represents the table Competition in the database.
-func NewCompeititonWithOutPtr() Competition {
+// NewCompetitionWithOutPtr is a struct without pointer that represents the table Competition in the database.
+func NewCompetitionWithOutPtr() Competition {
 	return Competition{}
 }
 
@@ -42,7 +43,7 @@ func (c *Competition) SetDate(param time.Time) {
 
 // AllField is a function to get all field or column in the table Competition.
 func (c *Competition) AllField() (str []string) {
-	str = []string{
+	str = []string{ 
 		`id`,
 		`date`,
 	}
@@ -51,7 +52,8 @@ func (c *Competition) AllField() (str []string) {
 
 // OrderFields is a function to get all field or column in the table Competition.
 func (c *Competition) OrderFields() (str []string) {
-	str = []string{}
+	str = []string{ 
+	}
 	return
 }
 
@@ -73,21 +75,22 @@ func (c *Competition) GetValuesByColums(columns ...string) []any {
 func (c *Competition) ScanMap(data map[string]any) (err error) {
 	for key, value := range data {
 		switch key {
-		case c.FieldDate():
-			val, ok := value.(time.Time)
-			if !ok {
-				return errors.New("invalid type time.Time. field Date")
-			}
-			c.SetDate(val)
 		case c.FieldID():
 			val, ok := value.(string)
 			if !ok {
 				return errors.New("invalid type string. field ID")
 			}
 			c.SetID(val)
+		case c.FieldDate():
+			val, ok := value.(time.Time)
+			if !ok {
+				return errors.New("invalid type time.Time. field Date")
+			}
+			c.SetDate(val)
 		default:
 			return errors.New("invalid column")
 		}
 	}
 	return nil
 }
+
